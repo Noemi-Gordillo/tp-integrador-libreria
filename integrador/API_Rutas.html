@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Biblioteca — Rutas</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: #0f172a;
+            color: #e2e8f0;
+            line-height: 1.6;
+        }
+
+        header {
+            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+            padding: 2rem 2rem 1.5rem;
+            border-bottom: 3px solid #3b82f6;
+        }
+        header h1 { font-size: 1.7rem; color: #f8fafc; margin-bottom: 0.3rem; }
+        header p  { color: #94a3b8; font-size: 0.9rem; }
+
+        .info-bar {
+            display: flex; gap: 1rem; flex-wrap: wrap; align-items: center;
+            margin: 1.5rem 2rem 0;
+            background: #1e293b; border: 1px solid #334155;
+            border-radius: 8px; padding: 0.9rem 1.2rem;
+        }
+        .info-bar span { color: #94a3b8; font-size: 0.85rem; }
+        .info-bar code  { color: #60a5fa; }
+        .btn-h2 {
+            margin-left: auto;
+            background: #1d4ed8; color: #fff;
+            border: none; border-radius: 6px;
+            padding: 0.45rem 1rem; font-size: 0.82rem; cursor: pointer;
+            text-decoration: none; display: inline-block;
+        }
+        .btn-h2:hover { background: #2563eb; }
+
+        .container { max-width: 1050px; margin: 0 auto; padding: 1.5rem 1.5rem 3rem; }
+
+        .notice {
+            background: #1e3a1e; border: 1px solid #16a34a;
+            border-radius: 8px; padding: 0.9rem 1.2rem;
+            font-size: 0.85rem; color: #86efac; margin-bottom: 1.5rem;
+        }
+
+        .section { margin-bottom: 2rem; }
+        .section-title {
+            display: flex; align-items: center; gap: 0.6rem;
+            font-size: 1.1rem; color: #f8fafc;
+            margin-bottom: 0.8rem; padding-bottom: 0.4rem;
+            border-bottom: 2px solid #334155;
+        }
+
+        .endpoint {
+            background: #1e293b; border: 1px solid #334155;
+            border-radius: 8px; margin-bottom: 0.6rem; overflow: hidden;
+        }
+
+        .endpoint-header {
+            display: flex; align-items: center; gap: 0.8rem;
+            padding: 0.75rem 1rem; cursor: pointer; transition: background 0.15s;
+            user-select: none;
+        }
+        .endpoint-header:hover { background: #293548; }
+        .endpoint.open .endpoint-header { background: #293548; }
+
+        .method {
+            font-size: 0.7rem; font-weight: 700;
+            padding: 0.25rem 0.55rem; border-radius: 4px;
+            min-width: 58px; text-align: center; letter-spacing: 0.5px;
+        }
+        .method.GET    { background: #14532d; color: #86efac; }
+        .method.POST   { background: #1e3a8a; color: #93c5fd; }
+        .method.PUT    { background: #78350f; color: #fcd34d; }
+        .method.PATCH  { background: #4c1d95; color: #c4b5fd; }
+        .method.DELETE { background: #7f1d1d; color: #fca5a5; }
+
+        .path {
+            font-family: 'Cascadia Code', Consolas, monospace;
+            font-size: 0.88rem; color: #cbd5e1; flex: 1;
+        }
+
+        .desc { font-size: 0.8rem; color: #64748b; margin-right: 0.5rem; }
+
+        /* Botón "Probar" */
+        .btn-try {
+            font-size: 0.72rem; padding: 0.3rem 0.7rem;
+            border-radius: 5px; border: none; cursor: pointer;
+            font-weight: 600; white-space: nowrap;
+        }
+        .btn-try.GET    { background: #166534; color: #86efac; }
+        .btn-try.POST   { background: #1e40af; color: #93c5fd; }
+        .btn-try.PUT    { background: #92400e; color: #fcd34d; }
+        .btn-try.PATCH  { background: #5b21b6; color: #c4b5fd; }
+        .btn-try.DELETE { background: #991b1b; color: #fca5a5; }
+        .btn-try:hover { opacity: 0.85; }
+
+        .endpoint-body {
+            display: none; padding: 0 1rem 1rem;
+        }
+        .endpoint.open .endpoint-body { display: block; }
+
+        .endpoint-body h4 {
+            font-size: 0.75rem; color: #64748b;
+            margin: 0.9rem 0 0.35rem; text-transform: uppercase; letter-spacing: 0.5px;
+        }
+
+        pre {
+            background: #0f172a; border: 1px solid #1e293b; border-radius: 6px;
+            padding: 0.75rem; font-family: 'Cascadia Code', Consolas, monospace;
+            font-size: 0.8rem; color: #a5b4fc; overflow-x: auto; white-space: pre-wrap;
+        }
+        .k { color: #93c5fd; }
+        .s { color: #86efac; }
+        .n { color: #fbbf24; }
+        .c { color: #475569; }
+
+        .badges { display: flex; gap: 0.4rem; flex-wrap: wrap; margin-top: 0.5rem; }
+        .badge {
+            font-size: 0.7rem; padding: 0.15rem 0.5rem;
+            border-radius: 4px; background: #334155; color: #94a3b8;
+        }
+        .badge.ok   { color: #86efac; }
+        .badge.err  { color: #fca5a5; }
+        .badge.warn { color: #fcd34d; }
+
+        /* Panel de respuesta en vivo */
+        .response-panel {
+            margin-top: 0.75rem;
+            background: #0f172a; border: 1px solid #334155;
+            border-radius: 6px; overflow: hidden; display: none;
+        }
+        .response-panel.visible { display: block; }
+        .response-panel-header {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 0.5rem 0.75rem;
+            background: #1e293b; font-size: 0.75rem; color: #94a3b8;
+        }
+        .status-pill {
+            font-weight: 700; padding: 0.15rem 0.5rem; border-radius: 4px; font-size: 0.72rem;
+        }
+        .status-2xx { background: #14532d; color: #86efac; }
+        .status-4xx { background: #7f1d1d; color: #fca5a5; }
+        .status-5xx { background: #78350f; color: #fcd34d; }
+        .response-panel pre { border: none; border-radius: 0; }
+
+        /* Formulario de body para POST/PUT */
+        .body-editor {
+            margin-top: 0.6rem;
+        }
+        .body-editor label {
+            font-size: 0.75rem; color: #64748b;
+            display: block; margin-bottom: 0.3rem; text-transform: uppercase; letter-spacing: 0.5px;
+        }
+        .body-editor textarea {
+            width: 100%; background: #0f172a; border: 1px solid #334155;
+            border-radius: 6px; color: #a5b4fc;
+            font-family: 'Cascadia Code', Consolas, monospace;
+            font-size: 0.8rem; padding: 0.6rem; resize: vertical; min-height: 110px;
+        }
+        .body-editor textarea:focus { outline: 1px solid #3b82f6; }
+
+        .btn-send {
+            margin-top: 0.5rem;
+            padding: 0.4rem 1.1rem; border: none; border-radius: 6px;
+            font-size: 0.82rem; font-weight: 600; cursor: pointer;
+            background: #2563eb; color: #fff;
+        }
+        .btn-send:hover { background: #1d4ed8; }
+        .btn-send:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        footer {
+            text-align: center; padding: 2rem; color: #475569; font-size: 0.8rem;
+            border-top: 1px solid #1e293b;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>📚 API Biblioteca — Rutas interactivas</h1>
+    <p>Spring Boot 4.1.0 · Java 21 · H2 in-memory</p>
+    <div class="info-bar">
+        <span>Base URL: <code>http://localhost:8080</code></span>
+        <span>Content-Type: <code>application/json</code></span>
+        <a class="btn-h2" href="http://localhost:8080/h2-console" target="_blank">🗄️ Abrir H2 Console</a>
+    </div>
+</header>
+
+<div class="container">
+    <div class="notice">
+        ✅ <strong>Cómo usar:</strong> expandí cualquier endpoint y hacé clic en <strong>▶ Probar</strong>
+        para ejecutarlo contra el backend en <code>localhost:8080</code>.
+        Para POST/PUT podés editar el body antes de enviarlo.
+    </div>
+
+    <!-- =========== LIBROS =========== -->
+    <div class="section">
+        <div class="section-title">📖 Libros — <code>/api/libros</code></div>
+
+        <!-- GET /api/libros -->
+        <div class="endpoint">
+            <div class="endpoint-header" onclick="toggleEndpoint(this)">
+                <span class="method GET">GET</span>
+                <span class="path">/api/libros</span>
+                <span class="desc">Listar todos los libros</span>
+                <button class="btn-try GET" onclick="event.stopPropagation(); sendRequest(this, 'GET', 'http://localhost:8080/api/libros')">▶ Probar</button>
+            </div>
+            <div class="endpoint-body">
+                <h4>Query param opcional</h4>
+                <pre><span class="c">?disponible=true  → solo libros disponibles</span></pre>
+                <div class="badges">
+                    <span class="badge ok">200 OK</span>
+                </div>
+                <div class="response-panel"></div>
+            </div>
+        </div>
+
+        <!-- GET /api/libros?disponible=true -->
+        <div class="endpoint">
+            <div class="endpoint-header" onclick="toggleEndpoint(this)">
+                <span class="method GET">GET</span>
+                <span class="path">/api/libros?disponible=true</span>
+                <span class="desc">Solo libros disponibles</span>
+                <button class="btn-try GET" onclick="event.stopPropagation(); sendRequest(this, 'GET', 'http://localhost:8080/api/libros?disponible=true')">▶ Probar</button>
+            </div>
+            <div class="endpoint-body">
+                <div class="badges"><span class="badge ok">200 OK</span></div>
+                <div class="response-panel"></div>
+            </div>
+        </div>
+
+        <!-- GET /api/libros/{id} -->
+        <div class="endpoint">
+            <div class="endpoint-header" onclick="toggleEndpoint(this)">
+                <span class="method GET">GET</span>
+                <span class="path">/api/libros/{id}</span>
+                <span class="desc">Buscar libro por ID</span>
+                <button class="btn-try GET" onclick="event.stopPropagation(); sendRequestWithId(this, 'GET', 'http://localhost:8080/api/libros/')">▶ Probar</button>
+            </div>
+            <div class="endpoint-body">
+                <h4>ID a consultar</h4>
+                <input class="id-input" type="number" value="1" min="1"
+                    style="background:#0f172a;border:1px solid #334155;color:#fbbf24;border-radius:5px;padding:0.3rem 0.6rem;font-size:0.85rem;width:100px">
+                <div class="badges" style="margin-top:0.5rem">
+                    <span class="badge ok">200 OK</span>
+                    <span class="badge err">404 Not Found</span>
+                </div>
+                <div class="response-panel"></div>
+            </div>
+        </div>
+
+        <!-- POST /api/libros -->
+        <div class="endpoint">
+            <div class="endpoint-header" onclick="toggleEndpoint(this)">
+                <span class="method POST">POST</span>
+                <span class="path">/api/libros</span>
+                <span class="desc">Crear un libro</span>
+                <button class="btn-try POST" onclick="event.stopPropagation(); sendRequestWithBody(this, 'POST', 'http://localhost:8080/api/libros')">▶ Probar</button>
+            </div>
+            <div class="endpoint-body">
+                <div class="body-editor">
+                    <label>Body (JSON)</label>
+                    <textarea>{
+  "id": 2,
+  "isbn": "9789500765220",
+  "titulo": "El amor en tiempos de colera",
+  "edicion": "1ra",
+  "editorial": "Sudamericana",
+  "autores": "Gabriel Garcia Marquez"
+}</textarea>
+                </div>
+                <div class="badges" style="margin-top:0.5rem">
+                    <span class="badge ok">201 Created</span>
+                    <span class="badge err">400 Bad Request</span>
+                </div>
+                <div class="response-panel"></div>
+            </div>
+        </div>
+
+        <!-- PUT /api/libros/{id} -->
+        <div class="endpoint">
+            <div class="endpoint-header" onclick="toggleEndpoint(this)">
+                <span class="method PUT">PUT</span>
+                <span class="path">/api/libros/{id}</span>
+                <span class="desc">Modificar un libro</span>
+                <button class="btn-try PUT" onclick="event.stopPropagation(); sendRequestWithBody(this, 'PUT', 'http://localhost:8080/api/libros/', true)">▶ Probar</button>
+            </div>
+            <div class="endpoint-body">
+                <h4>ID a modificar</h4>
+                <input class="id-input" type="number" value="2" min="1"
+                    style="background:#0f172a;border:1px solid #334155;color:#fbbf24;border-radius:5px;padding:0.3rem 0.6rem;font-size:0.85rem;width:100px">
+                <div class="body-editor">
+                    <label>Body (JSON)</label>
+                    <textarea>{
+  "id": 2,
+  "isbn": "9789500765220",
+  "titulo": "Titulo actualizado",
+  "edicion": "2da",
+  "editorial": "Sudamericana",
+  "autores": "Gabriel Garcia Marquez"
+}</textarea>
+                </div>
+                <div class="badges" style="margin-top:0.5rem">
+                    <span class="badge ok">200 OK</span>
+                    <span class="badge err">400 Bad Request</span>
+                    <span class="badge err">404 Not Found</span>
+                </div>
+                <div class="response-panel"></div>
+            </div>
+        </div>
+
+        <!-- DELETE /api/libros/{id} -->
+        <div class="endpoint">
+            <div class="endpoint-header" onclick="toggleEndpoint(this)">
+                <span class="method DELETE">DELETE</span>
+                <span class="path">/api/libros/{id}</span>
+                <span class="desc">Borrar un libro</span>
+                <button class="btn-try DELETE" onclick="event.stopPropagation(); sendRequestWithId(this, 'DELETE', 'http://localhost:8080/api/libros/')">▶ Probar</button>
+            </div>
+            <div class="endpoint-body">
+                <h4>ID a eliminar</h4>
+                <input class="id-input" type="number" value="2" min="1"
+                    style="background:#0f172a;border:1px solid #334155;color:#fbbf24;border-radius:5px;padding:0.3rem 0.6rem;font-size:0.85rem;width:100px">
+                <div class="badges" style="margin-top:0.5rem">
+                    <span class="badge ok">204 No Content</span>
+                    <span class="badge err">404 Not Found</span>
+                </div>
+                <div class="response-panel"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- =========== SOCIOS =========== -->
+    <div class="section">
+        <div class="section-title">👤 Socios — <code>/api/socios</code></div>
+
+        <!-- POST /api/socios -->
+        <div class="endpoint">
+            <div class="endpoint-header" onclick="toggleEndpoint(this)">
+                <span class="method POST">POST</span>
+                <span class="path">/api/socios</span>
+                <span class="desc">Crear un socio</span>
+                <button class="btn-try POST" onclick="event.stopPropagation(); sendRequestWithBody(this, 'POST', 'http://localhost:8080/api/socios')">▶ Probar</button>
+            </div>
+            <div class="endpoint-body">
+                <div class="body-editor">
+                    <label>Body (JSON)</label>
+                    <textarea>{
+  "id": 1,
+  "nombre": "Juan Perez",
+  "email": "juan@test.com"
+}</textarea>
+                </div>
+                <div class="badges" style="margin-top:0.5rem">
+                    <span class="badge ok">201 Created</span>
+                    <span class="badge err">400 Bad Request</span>
+                </div>
+                <div class="response-panel"></div>
+            </div>
+        </div>
+
+        <!-- GET /api/socios/{id} -->
+        <div class="endpoint">
+            <div class="endpoint-header" onclick="toggleEndpoint(this)">
+                <span class="method GET">GET</span>
+                <span class="path">/api/socios/{id}</span>
+                <span class="desc">Buscar socio por ID</span>
+                <button class="btn-try GET" onclick="event.stopPropagation(); sendRequestWithId(this, 'GET', 'http://localhost:8080/api/socios/')">▶ Probar</button>
+            </div>
+            <div class="endpoint-body">
+                <h4>ID a consultar</h4>
+                <input class="id-input" type="number" value="1" min="1"
+                    style="background:#0f172a;border:1px solid #334155;color:#fbbf24;border-radius:5px;padding:0.3rem 0.6rem;font-size:0.85rem;width:100px">
+                <div class="badges" style="margin-top:0.5rem">
+                    <span class="badge ok">200 OK</span>
+                    <span class="badge err">404 Not Found</span>
+                </div>
+                <div class="response-panel"></div>
+            </div>
+        </div>
+
+        <!-- GET /api/socios/{id}/prestamos -->
+        <div class="endpoint">
+            <div class="endpoint-header" onclick="toggleEndpoint(this)">
+                <span class="method GET">GET</span>
+                <span class="path">/api/socios/{id}/prestamos</span>
+                <span class="desc">Préstamos del socio</span>
+                <button class="btn-try GET" onclick="event.stopPropagation(); sendRequestWithId(this, 'GET', 'http://localhost:8080/api/socios/', '/prestamos')">▶ Probar</button>
+            </div>
+            <div class="endpoint-body">
+                <h4>ID del socio</h4>
+                <input class="id-input" type="number" value="1" min="1"
+                    style="background:#0f172a;border:1px solid #334155;color:#fbbf24;border-radius:5px;padding:0.3rem 0.6rem;font-size:0.85rem;width:100px">
+                <div class="badges" style="margin-top:0.5rem">
+                    <span class="badge ok">200 OK</span>
+                </div>
+                <div class="response-panel"></div>
+            </div>
+        </div>
+
+        <!-- PUT /api/socios/{id} -->
+        <div class="endpoint">
+            <div class="endpoint-header" onclick="toggleEndpoint(this)">
+                <span class="method PUT">PUT</span>
+                <span class="path">/api/socios/{id}</span>
+                <span class="desc">Modificar un socio</span>
+                <button class="btn-try PUT" onclick="event.stopPropagation(); sendRequestWithBody(this, 'PUT', 'http://localhost:8080/api/socios/', true)">▶ Probar</button>
+            </div>
+            <div class="endpoint-body">
+                <h4>ID a modificar</h4>
+                <input class="id-input" type="number" value="1" min="1"
+                    style="background:#0f172a;border:1px solid #334155;color:#fbbf24;border-radius:5px;padding:0.3rem 0.6rem;font-size:0.85rem;width:100px">
+                <div class="body-editor">
+                    <label>Body (JSON)</label>
+                    <textarea>{
+  "nombre": "Juan Carlos Perez",
+  "email": "juancarlos@test.com"
+}</textarea>
+                </div>
+                <div class="badges" style="margin-top:0.5rem">
+                    <span class="badge ok">200 OK</span>
+                    <span class="badge err">404 Not Found</span>
+                </div>
+                <div class="response-panel"></div>
+            </div>
+        </div>
+
+        <!-- DELETE /api/socios/{id} -->
+        <div class="endpoint">
+            <div class="endpoint-header" onclick="toggleEndpoint(this)">
+                <span class="method DELETE">DELETE</span>
+                <span class="path">/api/socios/{id}</span>
+                <span class="desc">Borrar un socio</span>
+                <button class="btn-try DELETE" onclick="event.stopPropagation(); sendRequestWithId(this, 'DELETE', 'http://localhost:8080/api/socios/')">▶ Probar</button>
+            </div>
+            <div class="endpoint-body">
+                <h4>ID a eliminar</h4>
+                <input class="id-input" type="number" value="1" min="1"
+                    style="background:#0f172a;border:1px solid #334155;color:#fbbf24;border-radius:5px;padding:0.3rem 0.6rem;font-size:0.85rem;width:100px">
+                <div class="badges" style="margin-top:0.5rem">
+                    <span class="badge ok">200 OK</span>
+                    <span class="badge err">404 Not Found</span>
+                </div>
+                <div class="response-panel"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- =========== PRÉSTAMOS =========== -->
+    <div class="section">
+        <div class="section-title">📋 Préstamos — <code>/api/prestamos</code></div>
+
+        <!-- POST /api/prestamos -->
+        <div class="endpoint">
+            <div class="endpoint-header" onclick="toggleEndpoint(this)">
+                <span class="method POST">POST</span>
+                <span class="path">/api/prestamos</span>
+                <span class="desc">Crear un préstamo</span>
+                <button class="btn-try POST" onclick="event.stopPropagation(); sendRequestWithBody(this, 'POST', 'http://localhost:8080/api/prestamos')">▶ Probar</button>
+            </div>
+            <div class="endpoint-body">
+                <div class="body-editor">
+                    <label>Body (JSON)</label>
+                    <textarea>{
+  "id": 1,
+  "libroId": 1,
+  "socioId": 1,
+  "fechaInicio": "2026-11-15",
+  "fechaDevolucion": "2026-11-22"
+}</textarea>
+                </div>
+                <h4>Reglas de negocio</h4>
+                <pre><span class="c">// Socio y libro deben existir
+// Máximo 3 préstamos activos por socio
+// El libro no puede estar ya prestado</span></pre>
+                <div class="badges">
+                    <span class="badge ok">201 Created</span>
+                    <span class="badge warn">409 Conflict</span>
+                </div>
+                <div class="response-panel"></div>
+            </div>
+        </div>
+
+        <!-- PATCH /api/prestamos/{id}/renovar -->
+        <div class="endpoint">
+            <div class="endpoint-header" onclick="toggleEndpoint(this)">
+                <span class="method PATCH">PATCH</span>
+                <span class="path">/api/prestamos/{id}/renovar</span>
+                <span class="desc">Renovar (+7 días)</span>
+                <button class="btn-try PATCH" onclick="event.stopPropagation(); sendRequestWithId(this, 'PATCH', 'http://localhost:8080/api/prestamos/', '/renovar')">▶ Probar</button>
+            </div>
+            <div class="endpoint-body">
+                <h4>ID del préstamo</h4>
+                <input class="id-input" type="number" value="1" min="1"
+                    style="background:#0f172a;border:1px solid #334155;color:#fbbf24;border-radius:5px;padding:0.3rem 0.6rem;font-size:0.85rem;width:100px">
+                <div class="badges" style="margin-top:0.5rem">
+                    <span class="badge ok">200 OK</span>
+                    <span class="badge warn">409 Conflict</span>
+                    <span class="badge err">404 Not Found</span>
+                </div>
+                <div class="response-panel"></div>
+            </div>
+        </div>
+
+        <!-- PATCH /api/prestamos/{id}/devolver -->
+        <div class="endpoint">
+            <div class="endpoint-header" onclick="toggleEndpoint(this)">
+                <span class="method PATCH">PATCH</span>
+                <span class="path">/api/prestamos/{id}/devolver</span>
+                <span class="desc">Devolver préstamo</span>
+                <button class="btn-try PATCH" onclick="event.stopPropagation(); sendRequestWithId(this, 'PATCH', 'http://localhost:8080/api/prestamos/', '/devolver')">▶ Probar</button>
+            </div>
+            <div class="endpoint-body">
+                <h4>ID del préstamo</h4>
+                <input class="id-input" type="number" value="1" min="1"
+                    style="background:#0f172a;border:1px solid #334155;color:#fbbf24;border-radius:5px;padding:0.3rem 0.6rem;font-size:0.85rem;width:100px">
+                <div class="badges" style="margin-top:0.5rem">
+                    <span class="badge ok">200 OK</span>
+                    <span class="badge warn">409 Conflict</span>
+                    <span class="badge err">404 Not Found</span>
+                </div>
+                <div class="response-panel"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- =========== TURNOS =========== -->
+    <div class="section">
+        <div class="section-title">🕐 Turnos — <code>/api/turnos</code></div>
+
+        <!-- GET /api/turnos/{id} -->
+        <div class="endpoint">
+            <div class="endpoint-header" onclick="toggleEndpoint(this)">
+                <span class="method GET">GET</span>
+                <span class="path">/api/turnos/{id}</span>
+                <span class="desc">Buscar turno por ID (1 o 2 precargados)</span>
+                <button class="btn-try GET" onclick="event.stopPropagation(); sendRequestWithId(this, 'GET', 'http://localhost:8080/api/turnos/')">▶ Probar</button>
+            </div>
+            <div class="endpoint-body">
+                <h4>ID a consultar</h4>
+                <input class="id-input" type="number" value="1" min="1"
+                    style="background:#0f172a;border:1px solid #334155;color:#fbbf24;border-radius:5px;padding:0.3rem 0.6rem;font-size:0.85rem;width:100px">
+                <div class="badges" style="margin-top:0.5rem">
+                    <span class="badge ok">200 OK</span>
+                    <span class="badge err">404 Not Found</span>
+                </div>
+                <div class="response-panel"></div>
+            </div>
+        </div>
+
+        <!-- POST /api/turnos -->
+        <div class="endpoint">
+            <div class="endpoint-header" onclick="toggleEndpoint(this)">
+                <span class="method POST">POST</span>
+                <span class="path">/api/turnos</span>
+                <span class="desc">Crear un turno</span>
+                <button class="btn-try POST" onclick="event.stopPropagation(); sendRequestWithBody(this, 'POST', 'http://localhost:8080/api/turnos')">▶ Probar</button>
+            </div>
+            <div class="endpoint-body">
+                <div class="body-editor">
+                    <label>Body (JSON)</label>
+                    <textarea>{
+  "id": 3,
+  "nombre": "Carlos Lopez",
+  "horario": "14:00 - 15:00"
+}</textarea>
+                </div>
+                <div class="badges" style="margin-top:0.5rem">
+                    <span class="badge ok">201 Created</span>
+                    <span class="badge err">400 Bad Request</span>
+                </div>
+                <div class="response-panel"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<footer>API Biblioteca · Spring Boot 4.1.0 · Proyecto Integrador — UNDEC</footer>
+
+<script>
+    // Expandir/contraer sección
+    function toggleEndpoint(header) {
+        header.closest('.endpoint').classList.toggle('open');
+    }
+
+    // Muestra el panel de respuesta
+    function showResponse(endpoint, status, body) {
+        const panel = endpoint.querySelector('.response-panel');
+        const statusClass = status >= 500 ? 'status-5xx' : status >= 400 ? 'status-4xx' : 'status-2xx';
+        let text;
+        try { text = JSON.stringify(JSON.parse(body), null, 2); }
+        catch { text = body || '(sin contenido)'; }
+
+        panel.innerHTML = `
+            <div class="response-panel-header">
+                <span>Respuesta</span>
+                <span class="status-pill ${statusClass}">${status}</span>
+            </div>
+            <pre>${escapeHtml(text)}</pre>`;
+        panel.classList.add('visible');
+    }
+
+    function escapeHtml(str) {
+        return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+
+    // GET simple
+    async function sendRequest(btn, method, url) {
+        const endpoint = btn.closest('.endpoint');
+        endpoint.classList.add('open');
+        btn.disabled = true; btn.textContent = '…';
+        try {
+            const r = await fetch(url, { method });
+            const text = await r.text();
+            showResponse(endpoint, r.status, text);
+        } catch(e) {
+            showResponse(endpoint, 0, '❌ No se pudo conectar al backend. ¿Está corriendo con mvnw.cmd spring-boot:run?');
+        }
+        btn.disabled = false; btn.textContent = '▶ Probar';
+    }
+
+    // GET/DELETE con ID leído del input
+    async function sendRequestWithId(btn, method, baseUrl, suffix = '') {
+        const endpoint = btn.closest('.endpoint');
+        endpoint.classList.add('open');
+        const idInput = endpoint.querySelector('.id-input');
+        const id = idInput ? idInput.value : '';
+        const url = baseUrl + id + suffix;
+        btn.disabled = true; btn.textContent = '…';
+        try {
+            const r = await fetch(url, { method });
+            const text = await r.text();
+            showResponse(endpoint, r.status, text);
+        } catch(e) {
+            showResponse(endpoint, 0, '❌ No se pudo conectar al backend. ¿Está corriendo con mvnw.cmd spring-boot:run?');
+        }
+        btn.disabled = false; btn.textContent = '▶ Probar';
+    }
+
+    // POST/PUT con body editable
+    async function sendRequestWithBody(btn, method, baseUrl, withId = false) {
+        const endpoint = btn.closest('.endpoint');
+        endpoint.classList.add('open');
+        const textarea = endpoint.querySelector('textarea');
+        const idInput  = endpoint.querySelector('.id-input');
+        const body     = textarea ? textarea.value : '{}';
+        const url      = withId && idInput ? baseUrl + idInput.value : baseUrl;
+        btn.disabled = true; btn.textContent = '…';
+        try {
+            const r = await fetch(url, {
+                method,
+                headers: { 'Content-Type': 'application/json' },
+                body
+            });
+            const text = await r.text();
+            showResponse(endpoint, r.status, text);
+        } catch(e) {
+            showResponse(endpoint, 0, '❌ No se pudo conectar al backend. ¿Está corriendo con mvnw.cmd spring-boot:run?');
+        }
+        btn.disabled = false; btn.textContent = '▶ Probar';
+    }
+</script>
+</body>
+</html>

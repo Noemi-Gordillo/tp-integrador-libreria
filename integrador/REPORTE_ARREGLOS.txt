@@ -1,0 +1,223 @@
+================================================================================
+  REPORTE DE ARREGLOS Y CAMBIOS — PROYECTO INTEGRADOR API BIBLIOTECA
+  Fecha: 15/16 de Noviembre de 2026
+  Spring Boot 4.1.0 | Java 21 | H2 in-memory
+================================================================================
+
+
+--------------------------------------------------------------------------------
+1. ARCHIVOS ELIMINADOS
+--------------------------------------------------------------------------------
+
+- LibroRepositorylmpl  (sin extension .java)
+  Motivo: Archivo roto sin extension, contenia una clase duplicada
+  "LibroRepositoryImpl" que nunca compilaba y colisionaba con
+  LibroRepositoryImp.java. Los metodos útiles fueron migrados al
+  archivo correcto.
+
+
+--------------------------------------------------------------------------------
+2. ARCHIVOS CREADOS (nuevos)
+--------------------------------------------------------------------------------
+
+- TurnoControlador.java
+  Motivo: El TurnoService existía pero no había ningún controlador REST
+  que expusiera los endpoints. Se creo con GET /api/turnos,
+  GET /api/turnos/{id} y POST /api/turnos.
+
+- API_Rutas.html
+  Descripción: Interfaz web interactiva para probar todos los endpoints
+  desde el navegador con un clic. Incluye formularios editables para
+  POST/PUT, panel de respuesta en vivo con código de estado, y boton
+  directo a la consola H2.
+
+- README.md
+  Descripción: Documentación del proyecto con instrucciones para correr
+  el backend, tabla completa de las 19 rutas y ejemplos curl para cada
+  endpoint.
+
+- REPORTE_ARREGLOS.txt  (este archivo)
+
+
+--------------------------------------------------------------------------------
+3. ERRORES DE COMPILACION CORREGIDOS POR ARCHIVO
+--------------------------------------------------------------------------------
+
+>> Libro.java
+   - Todos los campos eran "final" sin constructor vacio: Jackson no
+     podía deserializar JSON (POST/PUT fallaban).
+   - Faltaban setters para todos los campos.
+   - Se agregaron: constructor vacio, setters, y campos no-final.
+   - Se agrego constructor de 6 argumentos (disponible=true por defecto)
+     para compatibilidad con IntegradorApplication.java.
+
+>> LibroRepository.java (interfaz)
+   - Faltaban los métodos: listarTodos(), listarDisponible(), borrar(Long).
+   - El controlador los usaba pero la interfaz no los declaraba
+     (error de compilación).
+
+>> LibroRepositoryImp.java
+   - Faltaba implementar: listarTodos(), listarDisponible(), borrar(Long).
+   - Se migraron desde el archivo roto LibroRepositorylmpl.
+
+>> Prestamo.java
+   - setld() (con L minuscula) -> setId() (typo en nombre de metodo).
+   - getSocio() devolvia Long pero el nombre sugeria un objeto Socio,
+     se renombro a getSocioId() para consistencia.
+   - Faltaba constructor vacio para deserializacion JSON.
+
+>> PrestamoControlador.java
+   - Import incorrecto: org.springframework.web.annotation.RequestBody
+     -> org.springframework.web.bind.annotation.RequestBody
+   - Faltaban imports: @PatchMapping, @PathVariable, @RequestMapping.
+   - Variable "PrestamoCreado" (mayuscula) -> "prestamoCreado" (typo).
+   - Se agregaron GET /api/prestamos y GET /api/prestamos/{id}
+     que no existian.
+
+>> PrestamoRepository.java (interfaz)
+   - Faltaba declarar el metodo listarTodos().
+
+>> PrestamoRepositoryEnDBImp.java
+   - p.getSocio().getId() no compilaba: getSocio() devuelve Long,
+     no un objeto. Corregido a p.getSocioId().equals(...).
+   - Se implemento listarTodos().
+
+>> PrestamoServicio.java  (el más roto del proyecto)
+   - "import ar.edu.undec.integrador" en lugar de "package" (error
+     critico de declaración de paquete).
+   - getSocio().getId -> getSocioId() (getSocio no existe, el campo
+     es socioId de tipo Long).
+   - getLibro().getId -> getLibroId() (idem anterior).
+   - "RuntimeExeption" (typo) -> RuntimeException.
+   - "pretamo" (typo) -> "prestamo".
+   - "estadoPrestamo.DEVUELTO" (minuscula) -> EstadoPrestamo.DEVUELTO.
+   - En renovarPrestamo(): variable "prestamo" usada sin declarar.
+   - Se agregaron métodos: listarTodos(), buscarPorId().
+
+>> SocioControlador.java
+   - Import "anotation" -> "annotation" (typo en paquete de Spring).
+   - "prestamosServicio" -> "prestamoServicio" (nombre incorrecto).
+   - "@PathVaribe" -> "@PathVariable" (typo).
+   - "HttpStatus.NOT-FOUND" -> "HttpStatus.NOT_FOUND" (guion vs guion bajo).
+   - "socioExitente" -> "socioExistente" (typo).
+   - "ResponseEntity.Status" -> "ResponseEntity.status" (mayuscula incorrecta).
+   - Se agregó GET /api/socios (listar todos) que no existía.
+
+>> Socio.java
+   - Faltaban: constructor vacio, setNombre(), setEmail(), setId().
+     Sin estos el controlador PUT no podía modificar nada.
+
+>> SocioRepository.java (interfaz)
+   - Faltaba declarar borrar(Long id): la implementación tenía @Override
+     pero la interfaz no lo declaraba (error de compilación).
+   - Se agregó listarTodos().
+
+>> SocioRepositoryEnDBImp.java
+   - Se implementó listarTodos().
+
+>> TurnoRepository.java (interfaz)
+   - Se agregó listarTodos().
+
+>> TurnoRepositoryImp.java
+   - Se implementó listarTodos().
+
+>> TurnoRepositoryMySQL.java
+   - Se implementó listarTodos() (antes lanzaba excepcion implicita por
+     no implementar el metodo de la interfaz actualizada).
+
+>> TurnoRepositoryEnDBImp.java
+   - Se implementó listarTodos().
+   - Se reemplazó la implementación stub (devolvian objetos hardcodeados)
+     por un Map real para almacenamiento en memoria.
+
+>> TurnoService.java
+   - Se agregó método listarTodos().
+
+>> application.properties
+   - Estaba vacio (solo tenia el nombre de la app).
+   - Se agrego:
+       server.port=8080
+       spring.h2.console.enabled=true
+       spring.h2.console.path=/h2-console
+       spring.datasource.url=jdbc:h2:mem:libreria
+       spring.datasource.driver-class-name=org.h2.Driver
+       spring.datasource.username=sa
+       spring.datasource.password=
+       spring.jpa.hibernate.ddl-auto=none
+
+
+--------------------------------------------------------------------------------
+4. RUTAS AGREGADAS (que no existian)
+--------------------------------------------------------------------------------
+
+   GET  /api/socios              -> listar todos los socios
+   GET  /api/prestamos           -> listar todos los prestamos
+   GET  /api/prestamos/{id}      -> buscar prestamo por ID
+   GET  /api/turnos              -> listar todos los turnos
+   POST /api/turnos              -> crear turno
+   GET  /api/turnos/{id}         -> buscar turno por ID
+
+
+--------------------------------------------------------------------------------
+5. TABLA COMPLETA DE RUTAS DISPONIBLES (post-arreglo)
+--------------------------------------------------------------------------------
+
+   LIBROS
+   GET    http://localhost:8080/api/libros
+   GET    http://localhost:8080/api/libros?disponible=true
+   GET    http://localhost:8080/api/libros/{id}
+   POST   http://localhost:8080/api/libros
+   PUT    http://localhost:8080/api/libros/{id}
+   DELETE http://localhost:8080/api/libros/{id}
+
+   SOCIOS
+   GET    http://localhost:8080/api/socios
+   GET    http://localhost:8080/api/socios/{id}
+   GET    http://localhost:8080/api/socios/{id}/prestamos
+   POST   http://localhost:8080/api/socios
+   PUT    http://localhost:8080/api/socios/{id}
+   DELETE http://localhost:8080/api/socios/{id}
+
+   PRESTAMOS
+   GET    http://localhost:8080/api/prestamos
+   GET    http://localhost:8080/api/prestamos/{id}
+   POST   http://localhost:8080/api/prestamos
+   PATCH  http://localhost:8080/api/prestamos/{id}/renovar
+   PATCH  http://localhost:8080/api/prestamos/{id}/devolver
+
+   TURNOS
+   GET    http://localhost:8080/api/turnos
+   GET    http://localhost:8080/api/turnos/{id}
+   POST   http://localhost:8080/api/turnos
+
+   H2 CONSOLE
+   GET    http://localhost:8080/h2-console
+
+
+--------------------------------------------------------------------------------
+6. LO QUE NO SE INSTALO / CAMBIOS EN DEPENDENCIAS
+--------------------------------------------------------------------------------
+
+   No se instaló nada nuevo. Todas las dependencias ya estaban en pom.xml:
+
+   - spring-boot-starter-web       (controladores REST)
+   - spring-boot-starter-data-jpa  (JPA / Hibernate)
+   - h2                            (base de datos en memoria)
+   - spring-boot-starter-validation
+   - spring-boot-devtools          (recarga automatica)
+   - spring-boot-starter-test      (tests)
+
+   Solo se configuró correctamente el datasource H2 en application.properties
+   para que Spring Boot lo levantará sin errores al arrancar.
+
+
+--------------------------------------------------------------------------------
+7. ESTADO FINAL
+--------------------------------------------------------------------------------
+
+   Compilacion:  OK  (mvnw.cmd compile — sin errores)
+   Tests:        OK  (mvnw.cmd test — contexto Spring arranca correctamente)
+   Backend:      OK  (mvnw.cmd spring-boot:run — puerto 8080)
+   Endpoints:    19 rutas probadas y verificadas con respuestas correctas
+
+================================================================================
