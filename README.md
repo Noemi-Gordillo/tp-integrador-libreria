@@ -24,13 +24,13 @@ Trabajo práctico integrador de una API REST para la gestión de una librería
 
 ##  Prueba de endpoints (Postman)
 Se pueden probar las operaciones CRUD para:
-✅ Libros
-✅ Socios
-✅ Préstamos
+Libros
+Socios
+Préstamos
 
 ## Soporte técnico
-Recibí orientación para solucionar errores de compilación, configurar Git / GitHub y estructurar la documentación. La idea, el modelado, la lógica y el desarrollo principal del trabajo práctico fueron realizados por mí.
+Recibí orientación para solucionar errores de compilación, corregir sintaxis, configurar Git/GitHub y estructurar la documentación. El código fue escrito por mí, siguiendo la consigna entregada por el docente. 
 
-## 👩‍🎓 Autor
+## Autora
 Noemi Gordillo
 
