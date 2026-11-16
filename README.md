@@ -4,7 +4,7 @@
 Trabajo práctico integrador de una API REST para la gestión de una librería, desarrollado con Java y Spring Boot. El sistema permite administrar libros, socios y préstamos, cumpliendo con la consigna del trabajo práctico.
 
 ## Tecnologías utilizadas
-‑ Java 17
+‑ Java 21
 ‑ Spring Boot
 ‑ Maven
 ‑ H2 Database (base de datos en memoria)
